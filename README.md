@@ -54,40 +54,89 @@ So you can see that the data is curated as it moves through the different layers
 
 <ol>
 <li>Spark session is created using the AWS Access Key and AWS Secret Key.</li>
-<li>Two schemas, ```resultsSchema``` and ```workOrdersSchema``` are defined.</li>
-<li>```PlansShiftWise.csv``` is loaded into dataframe ```plans_df```.  It is a bronze layer data. Set ```bronze_plans_df = plans_df```. Here the data is separated using delimiter ```|```.</li>
-<li>Null columns are removed to make the dataframe ```silver_plans_df ```.</li>
-<li>```Results.csv```  is loaded into dataframe ```result_df``` based on the schema ```resultsSchema```. It is a bronze layer data. Set ```bronze_result_df = result_df```. Here the data is separated using delimiter ```,```.</li>
-<li>Null columns are removed to make the dataframe ````silver_result_df```.</li>
-<li>```RoutingStages.parquet```  is loaded into dataframe ```routing_df``` . It is a bronze layer data.So ```bronze_routing_df = routing_df```. Null columns are removed to make the dataframe ```silver_routing_df```.</li>
-<li>Create ```combined_df``` as  join of ```work_orders_df```, ```combined_df``` where  ```WorkOrderId == work_orders.id``` . Drop columns ```RoutingStageName```, ```BatchID```, ```id```.</li>
-<li>Create  dataframe ```work_orders_df``` based on the schema ```workOrdersSchema``` and load the given data ```Workorders.csv```. Here the data is separated using delimiter ```\t```.</li>
-<li>Drop columns ```EcnNo```, ```EcnQunatity```, ```EcnStatus```,```ProductRevision```,```PlannedStartDate```, ```PlannedEndDate```, ```BlockedDate```, ```BlockedBy```, ```CreationDate```, ```DysonPONumber```, ```CustomerSKUNumber```, ```Company```, ```Division```  from ```work_orderst_df```</li>
-<li>Set ```combined_df``` as join of ```work_orders_df```, ```combined_df``` where ```WorkOrderId == work_orders_df.Id```. Filter by ```combined_df.Surface == 1```, and drop column ```Id```.</li>
-<li>Create dataframe ```actual_df``` as ```combined_df``` grouped by the columns ```ItemId```, ```SubWorkCenter``` according to the count of ```BoardId``` along with last modified date, time as ```Hour``` and ```Date```.</li>
-<li>Set ```combined_df``` as join of ```plans_df```, 
-where ```(actual_df.ItemId == plans_df.ItemNo) &  (actual_df.SubWorkCenter == plans_df.Station) & 
-(actual_df.Hour == F.hour(plans_df.Hour)) & 
- (actual_df.Date == F.date_format(plans_df.Date, "yyyy-MM-dd"))```,Drop ```actual_df.Hour``` and ```actual_df.Date```</li>
-<li>Create  dataframe ```items_df``` and load the given data ```Items.txt```. It is a bronze layer data. Set ```bronze_items_df = items_df```. </li>
+<li>
+
+Two schemas, ``` resultsSchema ``` and ```workOrdersSchema``` are defined.</li>
+<li>
+
+```PlansShiftWise.csv``` is loaded into dataframe ```plans_df```.  It is a bronze layer data. Set ```bronze_plans_df = plans_df```. Here the data is separated using delimiter ```|```.</li>
+
+<li>
+
+Null columns are removed to make the dataframe ```silver_plans_df ```.</li>
+<li>
+
+```Results.csv```  is loaded into dataframe ```result_df``` based on the schema ```resultsSchema```. It is a bronze layer data. Set ```bronze_result_df = result_df```. Here the data is separated using delimiter ```,```.</li>
+<li>
+
+Null columns are removed to make the dataframe ````silver_result_df```.</li>
+<li>
+
+```RoutingStages.parquet```  is loaded into dataframe ```routing_df``` . It is a bronze layer data.So ```bronze_routing_df = routing_df```. Null columns are removed to make the dataframe ```silver_routing_df```.</li>
+<li>
+
+Create ```combined_df``` as  join of ```work_orders_df```, ```combined_df``` where  ```WorkOrderId == work_orders.id``` . Drop columns ```RoutingStageName```, ```BatchID```, ```id```.</li>
+<li>
+
+Create  dataframe ```work_orders_df``` based on the schema ```workOrdersSchema``` and load the given data ```Workorders.csv```. Here the data is separated using delimiter ```\t```.</li>
+<li>
+
+Drop columns ```EcnNo```, ```EcnQunatity```, ```EcnStatus```,```ProductRevision```,```PlannedStartDate```, ```PlannedEndDate```, ```BlockedDate```, ```BlockedBy```, ```CreationDate```, ```DysonPONumber```, ```CustomerSKUNumber```, ```Company```, ```Division```  from ```work_orderst_df```</li>
+<li>
+
+Set ```combined_df``` as join of ```work_orders_df```, ```combined_df``` where ```WorkOrderId == work_orders_df.Id```. Filter by ```combined_df.Surface == 1```, and drop column ```Id```.</li>
+<li>
+
+Create dataframe ```actual_df``` as ```combined_df``` grouped by the columns ```ItemId```, ```SubWorkCenter``` according to the count of ```BoardId``` along with last modified date, time as ```Hour``` and ```Date```.</li>
+<li>
+
+Set ```combined_df``` as join of ```plans_df```, where ```(actual_df.ItemId == plans_df.ItemNo) &  (actual_df.SubWorkCenter == plans_df.Station) & (actual_df.Hour == F.hour(plans_df.Hour)) & (actual_df.Date == F.date_format(plans_df.Date, "yyyy-MM-dd"))```. Drop ```actual_df.Hour``` and ```actual_df.Date```</li>
+<li>
+
+Create  dataframe ```items_df``` and load the given data ```Items.txt```. It is a bronze layer data. Set ```bronze_items_df = items_df```. </li>
 <li>Create pattern which is a regex expression is a sequence of different characters which describe the particular search pattern. </li>
-<li>Create schema called ```itemsSchema``` as given.</li>
-<li>Define function ```extract_values``` to extract data from input dataframe with the created pattern.</li>
-<li>Create dataframe ```extract_values_udf```  and extract values into it according to the created ```itemsSchema```,</li>
-<li>In ```items_df``` create column ```structured_data``` and load value from ```extract_values_udf```.</li>
-<li>Create columns in ```items_df``` as,
+<li>
+
+Create schema called ```itemsSchema``` as given.</li>
+<li>
+
+Define function ```extract_values``` to extract data from input dataframe with the created pattern.</li>
+<li>
+
+Create dataframe ```extract_values_udf```  and extract values into it according to the created ```itemsSchema```,</li>
+<li>
+
+In ```items_df``` create column ```structured_data``` and load value from ```extract_values_udf```.</li>
+<li>
+
+Create columns in ```items_df``` as,
 ```items_df = items_df.withColumn("ID_Items", F.col("structured_data.ID"))```</li>
 <li>Continue this operation for all columns.</li>
-<li>From ```items_df``` drop column ```structured_data```.</li>
-<li>Now items_df is a silver layer data, Create ```silver_items_df = items_df```</li>
-<li>Remove the rows with null values by ```items_df=items_df.na.drop()```</li>
-<li>Create ```final_df``` as join of ```items_df```, ```combined_df``` where ```ItemId``` == ```items_df.ID_Items```. This is gold layer data. Set ```gold_df = final_df```.</li>
-<li>Create grouped_data as ```final_df.groupBy(“Hour”, “Date”, “ItemNo”)```</li> 
-<li>Create ```actual_production``` which is the sum of column ```ActualQuantity```</li>
-<li>Create ```planned_production``` which is the sum of column ```Quantity```.</li>
+<li>
+
+From ```items_df``` drop column ```structured_data```.</li>
+<li>
+
+Now items_df is a silver layer data, Create ```silver_items_df = items_df```</li>
+<li>
+
+Remove the rows with null values by ```items_df=items_df.na.drop()```</li>
+<li>
+
+Create ```final_df``` as join of ```items_df```, ```combined_df``` where ```ItemId == items_df.ID_Items```. This is gold layer data. Set ```gold_df = final_df```.</li>
+<li>
+
+Create grouped_data as ```final_df.groupBy(“Hour”, “Date”, “ItemNo” ```</li> 
+<li>
+
+Create ```actual_production``` which is the sum of column ```ActualQuantity```</li>
+<li>
+
+Create ```planned_production``` which is the sum of column ```Quantity```.</li>
  
  
-<li>Planned production vs actual production is shown by dataframe which shows ```actual_production```, ```planned_production```, ```Hour```, ```Date```, ```ItemNo```, and a new column called ```Difference``` which is ,
-```F.col("Planned Production") - F.col("Actual Production")```.
+<li>
+
+Planned production vs actual production is shown by dataframe which shows ```actual_production```, ```planned_production```, ```Hour```, ```Date```, ```ItemNo```, and a new column called ```Difference``` which is , ```F.col("Planned Production") - F.col("Actual Production")```.
 </li>
 </ol>
