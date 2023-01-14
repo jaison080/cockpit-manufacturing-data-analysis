@@ -81,7 +81,7 @@ Create ```combined_df``` as  join of ```work_orders_df```, ```combined_df``` whe
 Create  dataframe ```work_orders_df``` based on the schema ```workOrdersSchema``` and load the given data ```Workorders.csv```. Here the data is separated using delimiter ```\t```.</li>
 <li>
 
-Drop columns ```EcnNo```, ```EcnQunatity```, ```EcnStatus```,```ProductRevision```,```PlannedStartDate```, ```PlannedEndDate```, ```BlockedDate```, ```BlockedBy```, ```CreationDate```, ```DysonPONumber```, ```CustomerSKUNumber```, ```Company```, ```Division```  from ```work_orderst_df```</li>
+Drop columns ```EcnNo```, ```EcnQunatity```, ```EcnStatus```,```ProductRevision```,```PlannedStartDate```, ```PlannedEndDate```, ```BlockedDate```, ```BlockedBy```, ```CreationDate```, ```DysonPONumber```, ```CustomerSKUNumber```, ```Company```, ```Division```  from ```work_orderst_df```.</li>
 <li>
 
 Set ```combined_df``` as join of ```work_orders_df```, ```combined_df``` where ```WorkOrderId == work_orders_df.Id```. Filter by ```combined_df.Surface == 1```, and drop column ```Id```.</li>
@@ -90,7 +90,7 @@ Set ```combined_df``` as join of ```work_orders_df```, ```combined_df``` where `
 Create dataframe ```actual_df``` as ```combined_df``` grouped by the columns ```ItemId```, ```SubWorkCenter``` according to the count of ```BoardId``` along with last modified date, time as ```Hour``` and ```Date```.</li>
 <li>
 
-Set ```combined_df``` as join of ```plans_df```, where ```(actual_df.ItemId == plans_df.ItemNo) &  (actual_df.SubWorkCenter == plans_df.Station) & (actual_df.Hour == F.hour(plans_df.Hour)) & (actual_df.Date == F.date_format(plans_df.Date, "yyyy-MM-dd"))```. Drop ```actual_df.Hour``` and ```actual_df.Date```</li>
+Set ```combined_df``` as join of ```plans_df```, where ```(actual_df.ItemId == plans_df.ItemNo) &  (actual_df.SubWorkCenter == plans_df.Station) & (actual_df.Hour == F.hour(plans_df.Hour)) & (actual_df.Date == F.date_format(plans_df.Date, "yyyy-MM-dd"))```. Drop ```actual_df.Hour``` and ```actual_df.Date```.</li>
 <li>
 
 Create  dataframe ```items_df``` and load the given data ```Items.txt```. It is a bronze layer data. Set ```bronze_items_df = items_df```. </li>
@@ -103,7 +103,7 @@ Create schema called ```itemsSchema``` as given.</li>
 Define function ```extract_values``` to extract data from input dataframe with the created pattern.</li>
 <li>
 
-Create dataframe ```extract_values_udf```  and extract values into it according to the created ```itemsSchema```,</li>
+Create dataframe ```extract_values_udf```  and extract values into it according to the created ```itemsSchema```.</li>
 <li>
 
 In ```items_df``` create column ```structured_data``` and load value from ```extract_values_udf```.</li>
@@ -117,19 +117,19 @@ Create columns in ```items_df``` as,
 From ```items_df``` drop column ```structured_data```.</li>
 <li>
 
-Now items_df is a silver layer data, Create ```silver_items_df = items_df```</li>
+Now items_df is a silver layer data, Create ```silver_items_df = items_df```.</li>
 <li>
 
-Remove the rows with null values by ```items_df=items_df.na.drop()```</li>
+Remove the rows with null values by ```items_df=items_df.na.drop()```.</li>
 <li>
 
 Create ```final_df``` as join of ```items_df```, ```combined_df``` where ```ItemId == items_df.ID_Items```. This is gold layer data. Set ```gold_df = final_df```.</li>
 <li>
 
-Create grouped_data as ```final_df.groupBy(“Hour”, “Date”, “ItemNo” ```</li> 
+Create grouped_data as ```final_df.groupBy(“Hour”, “Date”, “ItemNo” ```.</li> 
 <li>
 
-Create ```actual_production``` which is the sum of column ```ActualQuantity```</li>
+Create ```actual_production``` which is the sum of column ```ActualQuantity```.</li>
 <li>
 
 Create ```planned_production``` which is the sum of column ```Quantity```.</li>
@@ -139,4 +139,31 @@ Create ```planned_production``` which is the sum of column ```Quantity```.</li>
 
 Planned production vs actual production is shown by dataframe which shows ```actual_production```, ```planned_production```, ```Hour```, ```Date```, ```ItemNo```, and a new column called ```Difference``` which is , ```F.col("Planned Production") - F.col("Actual Production")```.
 </li>
+<li>
+
+Remove the rows with null values as ```final_df=final_df.na.drop()```.</li>
+<li>
+
+Set ```df_maxdate``` as column date of ```final_df``` Sorted in descending order at a limit of 9. Set date_val as first value in in ```df_maxdate```.</li>
+<li>
+
+Set ```final_df = final_df.join(df_maxdate, on=["Date"])``` and filter it by ```col “date” >=date_val``` and group by ```Date```, ```ItemId```, ```Description``` along with sum of ```ActualQuantity```.</li>
+<li>
+
+Create window named ```window``` which helps to change a column in the dataframe by preserving the other columns.
+ 
+```window = Window.partitionBy("Date").orderBy(F.col("sum(ActualQuantity)").desc())```.
+ 
+ </li>
+<li>
+
+Change ```final_df = final_df.select("*", F.row_number().over(window)alias("row_num"))```.</li>
+ 
+<li>
+
+Filter first_10_rows as ```row_num``` <=10.</li>
+<li>
+
+Set ```first_10_rows = first_10_rows.drop("row_num")``` sorted by descending order of ```Date``` at a limit of 70.</li>
+
 </ol>
