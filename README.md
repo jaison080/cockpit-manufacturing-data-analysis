@@ -234,3 +234,138 @@ Inventory aging is obtained by grouping ```df_4``` with ```Age``` and aggregatin
 Inventory value distributed across different bins is obtained by grouping ```df_4``` with ```Bin Code``` and aggregating it with the sum of ```Unit Price```.
 </li>
 </ol>
+
+### Report 3 (Component Temperature Realtime Report)
+
+<ol>
+<li>Create Spark Session called "Report 3 : Component Temperature Realtime Report".</li>
+ 
+<li>
+
+Set up kafka consumer as :
+
+```bash
+kafkaParams={{"bootstrap_servers":"<kafka-url>"}}
+topic = "IOTTemperatureStream01"
+consumer = KafkaConsumer(topic, **kafkaParams)
+```
+ </li>
+ <li>
+
+Create a dataframe ```df``` with the schema.
+
+```bash
+        StructField("lane_number", StringType(), True),
+        StructField("plant_name", StringType(), True),
+        StructField("temperature", IntegerType(), True),
+        StructField("timestamp", TimestampType(), True),
+        StructField("component_type", StringType(), True),
+        StructField("component_manufacturer", StringType(), True),
+```
+<li>
+
+Create a function called ```filterData``` which is required to show the temperature data of the last 10 mins and clear out the whole data when 30 mins is passed.</li>
+<li>
+
+In ```filterData``` set :
+
+```bash
+last_10_minutes = datetime.now() - timedelta(minutes=10)
+last_30_minutes= datetime.now() - timedelta(minutes=30)
+```
+and filter the input dataframe within the last 30 minutes and last 10 minutes.
+ 
+ ```bash
+filtered_max_temp_data = dataframe.filter(dataframe.timestamp > last_30_minutes)
+filtered_data = dataframe.filter(dataframe.timestamp > last_10_minutes)
+```
+<li>
+
+Filter ```filtered_data``` with temperature > 50.
+</li>
+<li>
+
+Generate ```component_counts```  as ```filtered_data .groupBy ("component_type").count()```, which is used to show the count of components with temperature > 50.
+ </li>
+ <li>
+
+Create two windows named ```window2```, window which helps to change a 
+column in the dataframe by preserving the other columns.
+
+```bash
+window2 = Window.partitionBy("lane_number").rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
+window = Window.partitionBy("lane_number").orderBy(desc("temperature"))
+```
+ <li>
+
+Add two columns ```avg_value``` and ```variance``` with mean of ```temperature``` over ```window2``` and variance of ```temperature``` over ```window```.
+</li>
+<li>
+
+Set 
+
+```bash
+max_temp_per_lane = filtered_max_temp_data.withColumn("row_number", row_number().over(window))
+max_temp_per_lane = max_temp_per_lane.filter(col("row_number") ==1)
+```
+ </li>
+ <li>
+
+Plot a graph of ```max_temp_per_lane``` by converting into ```pandas()```.
+<li>
+
+Create a function called ```process(rdd)``` which convert the input dataframe rdd from JSON file into data which is set as ```bronze_data```.
+</li> 
+<li>
+
+It removes the null columns from the data.
+```bash
+data = data.filter(data["component_info"].isNotNull())
+data = data.filter(data["timestamp"].isNotNull())
+```
+ </li>
+<li>
+
+If ```data.count``` > 0  then 
+```bash
+data = data.withColumn("timestamp",when(col("timestamp").cast("double").isNotNull( ), col("timestamp").cast("double").cast("timestamp")).otherwise(col("timestamp")))
+data = data.withColumn("component_manufacturer",                        data["component_info"]["component_manufacturer"]) 
+data = data.withColumn( "component_type", data["component_info"]["component_type"])
+data = data.drop("component_info")
+ ```
+ </li>
+<li>
+
+This data is input into ```df``` which is already defined with a specific schema.
+
+```df=df.union(data)```
+
+</li>
+<li>
+
+The formed data is silver data which is again refined by performing ```filterData(df)```.
+</li>
+ <li>
+
+Finally in the main program the ```consumer``` is initialized data is loaded as JSON data from the ```record.value```.
+
+``` bash
+messages = consumer.poll(1000)
+    for tp, message in messages.items():
+        for record in message:
+            data = json.loads(record.value)
+```
+</li>
+<li>
+
+ Process the data in function ```process()``` only if there is component_info in data .
+ ```bash
+if "component_info" in data and data["component_info"] and "component_type" in data["component_info"] and data["component_info"] ["component_type"] and data['temperature'] is not None:
+    rdd = sc.parallelize([record.value.decode('utf-8')])
+    process(rdd)
+```
+</li>
+<li>
+The required data is obtained along with the generated graph.
+</li>
+</ol>
