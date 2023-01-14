@@ -36,17 +36,26 @@ As a manufacturing plant for ABC corporation operating at Kerala, we are trying 
 <li>We have IoT enabled temperature sensors placed in machineries to collect temperature values at regular intervals. This data is continuously streamed to a message bus (Kafka) in JSON format. This data also needs to be collected and made available for real-time reporting dashboard to continuously monitor real-time temperature variations of respective components.</li>
 </ul>
 
+Go to [Table of Contents](#table-of-contents)
+
 ## Solution
 
 We are using Apache Spark to process data from S3 buckets and make it available for downstream applications. We are using Bokeh to visualize the data. We are using Kafka to stream data from IoT sensors and make it available for downstream applications.
+
+Go to [Table of Contents](#table-of-contents)
+
 
 ## Apache Spark
 
 Apache Spark is an open-source, distributed processing system used for big data workloads. It utilizes in-memory caching, and optimized query execution for fast analytic queries against data of any size. It provides development APIs in Java, Scala, Python and R, and supports code reuse across multiple workloads—batch processing, interactive queries, real-time analytics, machine learning, and graph processing.
 
+Go to [Table of Contents](#table-of-contents)
+
 ## PySpark
 
 PySpark is an interface for Apache Spark in Python. It not only allows you to write Spark applications using Python APIs, but also provides the PySpark shell for interactively analysing your data in a distributed environment. PySpark supports most of Spark’s features such as Spark SQL, DataFrame, Streaming, MLlib (Machine Learning) and Spark Core.
+
+Go to [Table of Contents](#table-of-contents)
 
 ## Medallion Architecture
 
@@ -71,6 +80,8 @@ In the lakehouse data engineering paradigm, typically the ELT methodology is fol
 Data in the Gold layer of the lakehouse is typically organized in consumption-ready "project-specific" databases. The Gold layer is for reporting and uses more de-normalized and read-optimized data models with fewer joins. The final layer of data transformations and data quality rules are applied here. Final presentation layer of projects such as Customer Analytics, Product Quality Analytics, Inventory Analytics, Customer Segmentation, Product Recommendations, Marking/Sales Analytics etc. fit in this layer. We see a lot of Kimball style star schema-based data models or Inmon style Data marts fit in this Gold Layer of the lakehouse.
 
 So you can see that the data is curated as it moves through the different layers of a lakehouse. In some cases, we also see that lot of Data Marts and EDWs from the traditional RDBMS technology stack are ingested into the lakehouse, so that for the first time Enterprises can do "pan-EDW" advanced analytics and ML - which was just not possible or too cost prohibitive to do on a traditional stack. (e.g. IoT/Manufacturing data is tied with Sales and Marketing data for defect analysis or health care genomics, EMR/HL7 clinical data markets are tied with financial claims data to create a Healthcare Data Lake for timely and improved patient care analytics.)
+
+Go to [Table of Contents](#table-of-contents)
 
 ## Implementation
 
@@ -192,6 +203,8 @@ Set ```first_10_rows = first_10_rows.drop("row_num")``` sorted by descending ord
 
 </ol>
 
+Go to [Table of Contents](#table-of-contents)
+
 ### Report 2 (SC Supply Chain Report)
 
 <ol>
@@ -258,6 +271,8 @@ Inventory aging is obtained by grouping ```df_4``` with ```Age``` and aggregatin
 Inventory value distributed across different bins is obtained by grouping ```df_4``` with ```Bin Code``` and aggregating it with the sum of ```Unit Price```.
 </li>
 </ol>
+
+Go to [Table of Contents](#table-of-contents)
 
 ### Report 3 (Component Temperature Realtime Report)
 
@@ -394,6 +409,8 @@ The required data is obtained along with the generated graph.
 </li>
 </ol>
 
+Go to [Table of Contents](#table-of-contents)
+
 ## Unit Test Cases
 
 <ol>
@@ -418,9 +435,13 @@ The required data is obtained along with the generated graph.
 </li>
 </ol>
 
+Go to [Table of Contents](#table-of-contents)
+
 ## Scalability
 
 It is a massive scale infrastructure, across our two largest and business Hadoop clusters, they have 10,000 nodes, with about 1 million CPU vcores and more than two petabytes of memory. Every day about 30,000 Spark applications run on their clusters. These Spark applications contribute to about 70% of our total costs for computer resource usage. And they’ve generated close to five petabytes of data to be shuffled daily. This massive scale infrastructure also grows very fast.
+
+Go to [Table of Contents](#table-of-contents)
 
 ## Deployment
 
@@ -449,16 +470,21 @@ Submit the spark application using the following command :
 spark-submit --class SparkWordCount --master local wordcount.jar
 ```
 
+Go to [Table of Contents](#table-of-contents)
+
 ## Handling Exceptions
 
 There are two ways to handle exceptions. One using an accumulator to gather all the exceptions and report it after the computations are over. The second option is to have the exceptions as a separate column in the data frame stored as String, which can be later analysed or filtered, by other transformations.
 
 If the number of exceptions that can occur are minimal compared to success cases, using an accumulator is a good option, however for large number of failed cases, an accumulator would be slower.
 
+Go to [Table of Contents](#table-of-contents)
 
 ## Conclusion
 
 In this project, we have implemented a real-time streaming application using Apache Spark. We have used Kafka as a message broker to stream data from the producer to the consumer. We have used Spark Streaming to process the data in real-time. We have used Spark SQL to perform data analysis and data transformation. We have used Bokeh to generate a graph.
+
+Go to [Table of Contents](#table-of-contents)
 
 ## References
 
@@ -467,3 +493,5 @@ In this project, we have implemented a real-time streaming application using Apa
 3. <a href="https://spark.apache.org/docs/latest/submitting-applications.html">Submitting Applications</a>
 4. <a href="https://spark.apache.org/docs/latest/configuration.html">Spark Configuration</a>
 5. <a href="https://spark.apache.org/docs/latest/monitoring.html">Spark Monitoring</a>
+
+Go to [Table of Contents](#table-of-contents)
