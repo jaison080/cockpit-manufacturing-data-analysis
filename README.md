@@ -17,13 +17,14 @@
 5. [Medallion Architecture](#medallion-architecture)
 6. [Implementation](#implementation)
 7. [Report 1 (Operations Management Report)](#report-1-operations-management-report)
-8. [Report 2 (SC Supply Chain Report)](#report-2-supply-chain-report)
-9. [Report 3 (Real-time Temperature Monitoring)](#report-3-real-time-temperature-monitoring)
+8. [Report 2 (SC Supply Chain Report)](#report-2-sc-supply-chain-report)
+9. [Report 3 (Component Temperature Realtime Report)](#report-3-component-temperature-realtime-report)
 10. [Unit Test Cases](#unit-test-cases)
 11. [Scalability](#scalability)
 12. [Deployment](#deployment)
 13. [Handling Exceptions](#handling-exceptions)
-14. [References](#references)
+14. [Conclusion](#conclusion)
+15. [References](#references)
 
 ## Problem Statement
 
