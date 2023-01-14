@@ -28,7 +28,7 @@ PySpark is an interface for Apache Spark in Python. It not only allows you to wr
 
 A medallion architecture is a data design pattern used to logically organise data in a lake house, with the goal of incrementally and progressively improving the structure and quality of data as it flows through each layer of the architecture (from Bronze ⇒ Silver ⇒ Gold layer tables). Medallion architectures are sometimes also referred to as "multi-hop" architectures.
 
-Image from Doc
+![image](https://user-images.githubusercontent.com/93505829/212487243-420dbda5-a85a-4cc1-ae01-119d1dadffd8.png)
 
 ### Bronze Layer (Raw Data)
 
