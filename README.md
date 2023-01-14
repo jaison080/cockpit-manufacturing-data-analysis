@@ -1,6 +1,29 @@
 # Cockpit Dashboard for Manufacturing Plant
 
-# ================================
+### Team Name : CODE MINERS
+
+### Team Members :
+
+1. [Jaison Dennis](https://github.com/jaison080)
+2. [Jagannath E Shahi](https://github.com/Jagannathes)
+3. [Hana Shelbin](https://github.com/H-ana)
+4. [Rahul VS](https://github.com/rahulvs891)
+
+## Table of Contents
+1. [Problem Statement](#problem-statement)
+2. [Solution](#solution)
+3. [Apache Spark](#apache-spark)
+4. [PySpark](#pyspark)
+5. [Medallion Architecture](#medallion-architecture)
+6. [Implementation](#implementation)
+7. [Report 1 (Operations Management Report)](#report-1-operations-management-report)
+8. [Report 2 (SC Supply Chain Report)](#report-2-supply-chain-report)
+9. [Report 3 (Real-time Temperature Monitoring)](#report-3-real-time-temperature-monitoring)
+10. [Unit Test Cases](#unit-test-cases)
+11. [Scalability](#scalability)
+12. [Deployment](#deployment)
+13. [Handling Exceptions](#handling-exceptions)
+14. [References](#references)
 
 ## Problem Statement
 
@@ -369,3 +392,77 @@ if "component_info" in data and data["component_info"] and "component_type" in d
 The required data is obtained along with the generated graph.
 </li>
 </ol>
+
+## Unit Test Cases
+
+<ol>
+<li>
+<b>pytest.fixture(scope="session")</b> : Using this pytest fixture means we can pass the spark session into every unit test without creating a new instance each time. Creating a new Spark session is an intensive process; using the same one will allow our tests to run more efficiently.
+</li>
+<br>
+<li>
+<b>Test data</b> : We are using a specific two-row example as a small dataset is all we require to prove the test case. As a result, we can create the DataFrame using lists. I suggest using a directory of test data files in CSV or JSON format if you require larger datasets.
+</li>
+<br>
+<li>
+<b>Expected data</b> : To validate the test case, we need to have desired results. Again, we use lists, but you may prefer to use some files.
+</li>
+<br>
+<li>
+<b>.collect()</b>: Spark has two types of operations, Transformations, and Actions. Transformations are added to the directed acyclic graph(DAG) and don’t return results until an Action is invoked. As our function doesn’t perform any actions, we need to call .collect() so that our transformation takes effect.
+</li>
+<br>
+<li>
+<b>Assertion</b> : To ensure our job code is performing as expected, we need to compare the results of our transformation against our desired data. Unfortunately, Spark doesn’t provide any DataFrame equality methods, so we will loop through row by row and compare our results to the expected data.
+</li>
+</ol>
+
+## Scalability
+
+It is a massive scale infrastructure, across our two largest and business Hadoop clusters, they have 10,000 nodes, with about 1 million CPU vcores and more than two petabytes of memory. Every day about 30,000 Spark applications run on their clusters. These Spark applications contribute to about 70% of our total costs for computer resource usage. And they’ve generated close to five petabytes of data to be shuffled daily. This massive scale infrastructure also grows very fast.
+
+## Deployment
+
+### Step 1: Download Spark Jar
+
+Spark Core jar is required for compilation, therefore, download ```spark-core_2.10-1.3.0.jar``` from the following link <a href="http://mvnrepository.com/artifact/org.apache.spark/spark-core_2.10/1.3.0">Spark Core jar</a> and move the jar file from download directory to spark-application directory.
+
+### Step 2: Compile the code
+
+Compile the above program using the command given below. This command should be executed from the spark-application directory. Here, ```/usr/local/spark/lib/spark-assembly-1.4.0-hadoop2.6.0.jar``` is a Hadoop support jar taken from Spark library.
+```bash
+scalac -classpath "spark-core_2.10-1.3.0.jar:/usr/local/spark/lib/spark-assembly-1.4.0-hadoop2.6.0.jar" SparkPi.scala
+```
+
+### Step 3: Create a jar file
+
+Create a jar file of the spark application using the following command. Here, wordcount is the file name for jar file.
+```bash
+jar -cvf wordcount.jar SparkWordCount*.class spark-core_2.10-1.3.0.jar/usr/local/spark/lib/spark-assembly-1.4.0-hadoop2.6.0.jar
+```
+
+### Step 4: Submit the Spark Application
+
+Submit the spark application using the following command :
+```bash
+spark-submit --class SparkWordCount --master local wordcount.jar
+```
+
+## Handling Exceptions
+
+There are two ways to handle exceptions. One using an accumulator to gather all the exceptions and report it after the computations are over. The second option is to have the exceptions as a separate column in the data frame stored as String, which can be later analysed or filtered, by other transformations.
+
+If the number of exceptions that can occur are minimal compared to success cases, using an accumulator is a good option, however for large number of failed cases, an accumulator would be slower.
+
+
+## Conclusion
+
+In this project, we have implemented a real-time streaming application using Apache Spark. We have used Kafka as a message broker to stream data from the producer to the consumer. We have used Spark Streaming to process the data in real-time. We have used Spark SQL to perform data analysis and data transformation. We have used Bokeh to generate a graph.
+
+## References
+
+1. <a href="https://spark.apache.org/docs/latest/sql-programming-guide.html">Spark SQL, DataFrames and Datasets Guide</a>
+2. <a href="https://spark.apache.org/docs/latest/quick-start.html">Spark Quick Start</a>
+3. <a href="https://spark.apache.org/docs/latest/submitting-applications.html">Submitting Applications</a>
+4. <a href="https://spark.apache.org/docs/latest/configuration.html">Spark Configuration</a>
+5. <a href="https://spark.apache.org/docs/latest/monitoring.html">Spark Monitoring</a>
