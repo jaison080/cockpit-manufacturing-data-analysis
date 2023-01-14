@@ -167,3 +167,70 @@ Filter first_10_rows as ```row_num``` <=10.</li>
 Set ```first_10_rows = first_10_rows.drop("row_num")``` sorted by descending order of ```Date``` at a limit of 70.</li>
 
 </ol>
+
+### Report 2 (SC Supply Chain Report)
+
+<ol>
+<li>
+
+Spark Session is created using the AWS Access key and AWS Secret key
+Two schemas, ```itemSchema``` and ```warehouseSchema``` are defined.</li>
+<li>
+
+```Item.parquet```  is loaded into dataframe ```bronze_item_df``` . It is a bronze layer data. For every column in ```item_df.columns```, set ```item_df = item_df.withColumnRenamed(col, [f.name for f in itemSchema.fields if f.name != col][0])```. </li>
+<li>
+
+Null columns are removed to make the dataframe ```silver_item_df``` . Set ```silver_item_df=item_df```.</li>
+<li>
+
+Create  dataframe ```warehouse_df``` based on the schema ```warehouseSchema``` and load the given data ```warehouse.csv```. Here the data is separated using delimiter ```,```. Set ```bronze_warehousedf = warehouse_df```
+</li>
+<li>
+
+A column ```Registering Date``` is added to ```warehouse_df``` and null columns are removed to make the dataframe ```silver_warehousedf``` . Set ```silver_warehousedf=warehouse_df```.
+</li>
+<li>
+
+Create dataframe ```production_df``` and load the given data ```production.txt```. Here the data is separated using delimiter ```\t```. Set ```bronze_productiondf = production_df```
+</li>
+<li>
+
+Null columns are removed to make the dataframe ```silver_productiondf``` .Set ```silver_productiondf=production_df```.
+</li>
+<li>
+
+Create ```df_1``` as ```warehouse_df.groupBy ("Lot No_", "Bin Code", "Item No_","Registering Date").agg( F.min("Registering Date").alias("min_registering_date"),F.sum("Quantity").alias("sum_quantity"),F.first("Zone Code").alias("first_zone_code"),F.datediff(F.current_date(), F.col("Registering Date")).alias("date_diff")).filter("sum_quantity > 0")```
+ </li>
+ <li>
+
+Create ```df_2``` as ```df_2 = item_df.filter("Production_BOM_No != ''").select("No", "Production_BOM_No").union( production_df.select("No_", "Production BOM No_")).distinct()```
+</li>
+<li>
+
+Create ```df_3``` as ```df_3 = df_1.join(df_2, df_1["Item No_"] == df_2["No"], "left").drop("No")```
+</li>
+<li>
+
+Create ```df_4``` as ```df_4 = df_3.join(item_df, df_3["Item No_"] == item_df["No"], "inner")```
+</li>
+<li>
+
+Null columns are removed to make the dataframe ```gold_df``` .Set ```gold_df=df_4```.
+</lI>
+<li>
+
+Inventory value distributed across different categories is obtained by grouping ```df_4``` with ```Item Disc_Group``` and aggregating it with the sum of ```Unit Price```.
+</li>
+<li>
+
+Top 10 inventory categories wrt value is obtained by sorting  ```inventory_value_by_category``` in ascending order.
+</li>
+<li>
+
+Inventory aging is obtained by grouping ```df_4``` with ```Age``` and aggregating it with the sum of ```Unit Price```.
+</li>
+<li>
+
+Inventory value distributed across different bins is obtained by grouping ```df_4``` with ```Bin Code``` and aggregating it with the sum of ```Unit Price```.
+</li>
+</ol>
