@@ -10,6 +10,7 @@
 4. [Rahul VS](https://github.com/rahulvs891)
 
 ## Table of Contents
+
 1. [Problem Statement](#problem-statement)
 2. [Solution](#solution)
 3. [Apache Spark](#apache-spark)
@@ -43,7 +44,6 @@ Go to [Table of Contents](#table-of-contents)
 We are using Apache Spark to process data from S3 buckets and make it available for downstream applications. We are using Bokeh to visualize the data. We are using Kafka to stream data from IoT sensors and make it available for downstream applications.
 
 Go to [Table of Contents](#table-of-contents)
-
 
 ## Apache Spark
 
@@ -91,115 +91,142 @@ Go to [Table of Contents](#table-of-contents)
 <li>Spark session is created using the AWS Access Key and AWS Secret Key.</li>
 <li>
 
-Two schemas, ``` resultsSchema ``` and ```workOrdersSchema``` are defined.</li>
-<li>
-
-```PlansShiftWise.csv``` is loaded into dataframe ```plans_df```.  It is a bronze layer data. Set ```bronze_plans_df = plans_df```. Here the data is separated using delimiter ```|```.</li>
+Two schemas, `resultsSchema` and `workOrdersSchema` are defined.</li>
 
 <li>
 
-Null columns are removed to make the dataframe ```silver_plans_df ```.</li>
+`PlansShiftWise.csv` is loaded into dataframe `plans_df`. It is a bronze layer data. Set `bronze_plans_df = plans_df`. Here the data is separated using delimiter `|`.</li>
+
 <li>
 
-```Results.csv```  is loaded into dataframe ```result_df``` based on the schema ```resultsSchema```. It is a bronze layer data. Set ```bronze_result_df = result_df```. Here the data is separated using delimiter ```,```.</li>
+Null columns are removed to make the dataframe `silver_plans_df `.</li>
+
 <li>
 
-Null columns are removed to make the dataframe ````silver_result_df```.</li>
+`Results.csv` is loaded into dataframe `result_df` based on the schema `resultsSchema`. It is a bronze layer data. Set `bronze_result_df = result_df`. Here the data is separated using delimiter `,`.</li>
+
 <li>
 
-```RoutingStages.parquet```  is loaded into dataframe ```routing_df``` . It is a bronze layer data.So ```bronze_routing_df = routing_df```. Null columns are removed to make the dataframe ```silver_routing_df```.</li>
+Null columns are removed to make the dataframe ``silver_result_df`.</li>
+
 <li>
 
-Create ```combined_df``` as  join of ```work_orders_df```, ```combined_df``` where  ```WorkOrderId == work_orders.id``` . Drop columns ```RoutingStageName```, ```BatchID```, ```id```.</li>
+`RoutingStages.parquet` is loaded into dataframe `routing_df` . It is a bronze layer data.So `bronze_routing_df = routing_df`. Null columns are removed to make the dataframe `silver_routing_df`.</li>
+
 <li>
 
-Create  dataframe ```work_orders_df``` based on the schema ```workOrdersSchema``` and load the given data ```Workorders.csv```. Here the data is separated using delimiter ```\t```.</li>
+Create `combined_df` as join of `work_orders_df`, `combined_df` where `WorkOrderId == work_orders.id` . Drop columns `RoutingStageName`, `BatchID`, `id`.</li>
+
 <li>
 
-Drop columns ```EcnNo```, ```EcnQunatity```, ```EcnStatus```,```ProductRevision```,```PlannedStartDate```, ```PlannedEndDate```, ```BlockedDate```, ```BlockedBy```, ```CreationDate```, ```DysonPONumber```, ```CustomerSKUNumber```, ```Company```, ```Division```  from ```work_orderst_df```.</li>
+Create dataframe `work_orders_df` based on the schema `workOrdersSchema` and load the given data `Workorders.csv`. Here the data is separated using delimiter `\t`.</li>
+
 <li>
 
-Set ```combined_df``` as join of ```work_orders_df```, ```combined_df``` where ```WorkOrderId == work_orders_df.Id```. Filter by ```combined_df.Surface == 1```, and drop column ```Id```.</li>
+Drop columns `EcnNo`, `EcnQunatity`, `EcnStatus`,`ProductRevision`,`PlannedStartDate`, `PlannedEndDate`, `BlockedDate`, `BlockedBy`, `CreationDate`, `DysonPONumber`, `CustomerSKUNumber`, `Company`, `Division` from `work_orderst_df`.</li>
+
 <li>
 
-Create dataframe ```actual_df``` as ```combined_df``` grouped by the columns ```ItemId```, ```SubWorkCenter``` according to the count of ```BoardId``` along with last modified date, time as ```Hour``` and ```Date```.</li>
+Set `combined_df` as join of `work_orders_df`, `combined_df` where `WorkOrderId == work_orders_df.Id`. Filter by `combined_df.Surface == 1`, and drop column `Id`.</li>
+
 <li>
 
-Set ```combined_df``` as join of ```plans_df```, where ```(actual_df.ItemId == plans_df.ItemNo) &  (actual_df.SubWorkCenter == plans_df.Station) & (actual_df.Hour == F.hour(plans_df.Hour)) & (actual_df.Date == F.date_format(plans_df.Date, "yyyy-MM-dd"))```. Drop ```actual_df.Hour``` and ```actual_df.Date```.</li>
+Create dataframe `actual_df` as `combined_df` grouped by the columns `ItemId`, `SubWorkCenter` according to the count of `BoardId` along with last modified date, time as `Hour` and `Date`.</li>
+
 <li>
 
-Create  dataframe ```items_df``` and load the given data ```Items.txt```. It is a bronze layer data. Set ```bronze_items_df = items_df```. </li>
+Set `combined_df` as join of `plans_df`, where `(actual_df.ItemId == plans_df.ItemNo) &  (actual_df.SubWorkCenter == plans_df.Station) & (actual_df.Hour == F.hour(plans_df.Hour)) & (actual_df.Date == F.date_format(plans_df.Date, "yyyy-MM-dd"))`. Drop `actual_df.Hour` and `actual_df.Date`.</li>
+
+<li>
+
+Create dataframe `items_df` and load the given data `Items.txt`. It is a bronze layer data. Set `bronze_items_df = items_df`. </li>
+
 <li>Create pattern which is a regex expression is a sequence of different characters which describe the particular search pattern. </li>
 <li>
 
-Create schema called ```itemsSchema``` as given.</li>
+Create schema called `itemsSchema` as given.</li>
+
 <li>
 
-Define function ```extract_values``` to extract data from input dataframe with the created pattern.</li>
+Define function `extract_values` to extract data from input dataframe with the created pattern.</li>
+
 <li>
 
-Create dataframe ```extract_values_udf```  and extract values into it according to the created ```itemsSchema```.</li>
+Create dataframe `extract_values_udf` and extract values into it according to the created `itemsSchema`.</li>
+
 <li>
 
-In ```items_df``` create column ```structured_data``` and load value from ```extract_values_udf```.</li>
+In `items_df` create column `structured_data` and load value from `extract_values_udf`.</li>
+
 <li>
 
-Create columns in ```items_df``` as,
-```items_df = items_df.withColumn("ID_Items", F.col("structured_data.ID"))```</li>
+Create columns in `items_df` as,
+`items_df = items_df.withColumn("ID_Items", F.col("structured_data.ID"))`</li>
+
 <li>Continue this operation for all columns.</li>
 <li>
 
-From ```items_df``` drop column ```structured_data```.</li>
+From `items_df` drop column `structured_data`.</li>
+
 <li>
 
-Now items_df is a silver layer data, Create ```silver_items_df = items_df```.</li>
+Now items_df is a silver layer data, Create `silver_items_df = items_df`.</li>
+
 <li>
 
-Remove the rows with null values by ```items_df=items_df.na.drop()```.</li>
+Remove the rows with null values by `items_df=items_df.na.drop()`.</li>
+
 <li>
 
-Create ```final_df``` as join of ```items_df```, ```combined_df``` where ```ItemId == items_df.ID_Items```. This is gold layer data. Set ```gold_df = final_df```.</li>
+Create `final_df` as join of `items_df`, `combined_df` where `ItemId == items_df.ID_Items`. This is gold layer data. Set `gold_df = final_df`.</li>
+
 <li>
 
-Create grouped_data as ```final_df.groupBy(“Hour”, “Date”, “ItemNo” ```.</li> 
+Create grouped_data as `final_df.groupBy(“Hour”, “Date”, “ItemNo” `.</li>
+
 <li>
 
-Create ```actual_production``` which is the sum of column ```ActualQuantity```.</li>
+Create `actual_production` which is the sum of column `ActualQuantity`.</li>
+
 <li>
 
-Create ```planned_production``` which is the sum of column ```Quantity```.</li>
- 
- 
+Create `planned_production` which is the sum of column `Quantity`.</li>
+
 <li>
 
-Planned production vs actual production is shown by dataframe which shows ```actual_production```, ```planned_production```, ```Hour```, ```Date```, ```ItemNo```, and a new column called ```Difference``` which is , ```F.col("Planned Production") - F.col("Actual Production")```.
+Planned production vs actual production is shown by dataframe which shows `actual_production`, `planned_production`, `Hour`, `Date`, `ItemNo`, and a new column called `Difference` which is , `F.col("Planned Production") - F.col("Actual Production")`.
+
 </li>
 <li>
 
-Remove the rows with null values as ```final_df=final_df.na.drop()```.</li>
+Remove the rows with null values as `final_df=final_df.na.drop()`.</li>
+
 <li>
 
-Set ```df_maxdate``` as column date of ```final_df``` Sorted in descending order at a limit of 9. Set date_val as first value in in ```df_maxdate```.</li>
+Set `df_maxdate` as column date of `final_df` Sorted in descending order at a limit of 9. Set date_val as first value in in `df_maxdate`.</li>
+
 <li>
 
-Set ```final_df = final_df.join(df_maxdate, on=["Date"])``` and filter it by ```col “date” >=date_val``` and group by ```Date```, ```ItemId```, ```Description``` along with sum of ```ActualQuantity```.</li>
+Set `final_df = final_df.join(df_maxdate, on=["Date"])` and filter it by `col “date” >=date_val` and group by `Date`, `ItemId`, `Description` along with sum of `ActualQuantity`.</li>
+
 <li>
 
-Create window named ```window``` which helps to change a column in the dataframe by preserving the other columns.
- 
-```window = Window.partitionBy("Date").orderBy(F.col("sum(ActualQuantity)").desc())```.
- 
+Create window named `window` which helps to change a column in the dataframe by preserving the other columns.
+
+`window = Window.partitionBy("Date").orderBy(F.col("sum(ActualQuantity)").desc())`.
+
  </li>
 <li>
 
-Change ```final_df = final_df.select("*", F.row_number().over(window)alias("row_num"))```.</li>
- 
+Change `final_df = final_df.select("*", F.row_number().over(window)alias("row_num"))`.</li>
+
 <li>
 
-Filter first_10_rows as ```row_num``` <=10.</li>
+Filter first_10_rows as `row_num` <=10.</li>
+
 <li>
 
-Set ```first_10_rows = first_10_rows.drop("row_num")``` sorted by descending order of ```Date``` at a limit of 70.</li>
+Set `first_10_rows = first_10_rows.drop("row_num")` sorted by descending order of `Date` at a limit of 70.</li>
 
 </ol>
 
@@ -211,64 +238,80 @@ Go to [Table of Contents](#table-of-contents)
 <li>
 
 Spark Session is created using the AWS Access key and AWS Secret key
-Two schemas, ```itemSchema``` and ```warehouseSchema``` are defined.</li>
+Two schemas, `itemSchema` and `warehouseSchema` are defined.</li>
+
 <li>
 
-```Item.parquet```  is loaded into dataframe ```bronze_item_df``` . It is a bronze layer data. For every column in ```item_df.columns```, set ```item_df = item_df.withColumnRenamed(col, [f.name for f in itemSchema.fields if f.name != col][0])```. </li>
+`Item.parquet` is loaded into dataframe `bronze_item_df` . It is a bronze layer data. For every column in `item_df.columns`, set `item_df = item_df.withColumnRenamed(col, [f.name for f in itemSchema.fields if f.name != col][0])`. </li>
+
 <li>
 
-Null columns are removed to make the dataframe ```silver_item_df``` . Set ```silver_item_df=item_df```.</li>
+Null columns are removed to make the dataframe `silver_item_df` . Set `silver_item_df=item_df`.</li>
+
 <li>
 
-Create  dataframe ```warehouse_df``` based on the schema ```warehouseSchema``` and load the given data ```warehouse.csv```. Here the data is separated using delimiter ```,```. Set ```bronze_warehousedf = warehouse_df```
+Create dataframe `warehouse_df` based on the schema `warehouseSchema` and load the given data `warehouse.csv`. Here the data is separated using delimiter `,`. Set `bronze_warehousedf = warehouse_df`
+
 </li>
 <li>
 
-A column ```Registering Date``` is added to ```warehouse_df``` and null columns are removed to make the dataframe ```silver_warehousedf``` . Set ```silver_warehousedf=warehouse_df```.
+A column `Registering Date` is added to `warehouse_df` and null columns are removed to make the dataframe `silver_warehousedf` . Set `silver_warehousedf=warehouse_df`.
+
 </li>
 <li>
 
-Create dataframe ```production_df``` and load the given data ```production.txt```. Here the data is separated using delimiter ```\t```. Set ```bronze_productiondf = production_df```
+Create dataframe `production_df` and load the given data `production.txt`. Here the data is separated using delimiter `\t`. Set `bronze_productiondf = production_df`
+
 </li>
 <li>
 
-Null columns are removed to make the dataframe ```silver_productiondf``` .Set ```silver_productiondf=production_df```.
+Null columns are removed to make the dataframe `silver_productiondf` .Set `silver_productiondf=production_df`.
+
 </li>
 <li>
 
-Create ```df_1``` as ```warehouse_df.groupBy ("Lot No_", "Bin Code", "Item No_","Registering Date").agg( F.min("Registering Date").alias("min_registering_date"),F.sum("Quantity").alias("sum_quantity"),F.first("Zone Code").alias("first_zone_code"),F.datediff(F.current_date(), F.col("Registering Date")).alias("date_diff")).filter("sum_quantity > 0")```
+Create `df_1` as `warehouse_df.groupBy ("Lot No_", "Bin Code", "Item No_","Registering Date").agg( F.min("Registering Date").alias("min_registering_date"),F.sum("Quantity").alias("sum_quantity"),F.first("Zone Code").alias("first_zone_code"),F.datediff(F.current_date(), F.col("Registering Date")).alias("date_diff")).filter("sum_quantity > 0")`
+
  </li>
  <li>
 
-Create ```df_2``` as ```df_2 = item_df.filter("Production_BOM_No != ''").select("No", "Production_BOM_No").union( production_df.select("No_", "Production BOM No_")).distinct()```
+Create `df_2` as `df_2 = item_df.filter("Production_BOM_No != ''").select("No", "Production_BOM_No").union( production_df.select("No_", "Production BOM No_")).distinct()`
+
 </li>
 <li>
 
-Create ```df_3``` as ```df_3 = df_1.join(df_2, df_1["Item No_"] == df_2["No"], "left").drop("No")```
+Create `df_3` as `df_3 = df_1.join(df_2, df_1["Item No_"] == df_2["No"], "left").drop("No")`
+
 </li>
 <li>
 
-Create ```df_4``` as ```df_4 = df_3.join(item_df, df_3["Item No_"] == item_df["No"], "inner")```
+Create `df_4` as `df_4 = df_3.join(item_df, df_3["Item No_"] == item_df["No"], "inner")`
+
 </li>
 <li>
 
-Null columns are removed to make the dataframe ```gold_df``` .Set ```gold_df=df_4```.
+Null columns are removed to make the dataframe `gold_df` .Set `gold_df=df_4`.
+
 </lI>
 <li>
 
-Inventory value distributed across different categories is obtained by grouping ```df_4``` with ```Item Disc_Group``` and aggregating it with the sum of ```Unit Price```.
+Inventory value distributed across different categories is obtained by grouping `df_4` with `Item Disc_Group` and aggregating it with the sum of `Unit Price`.
+
 </li>
 <li>
 
-Top 10 inventory categories wrt value is obtained by sorting  ```inventory_value_by_category``` in ascending order.
+Top 10 inventory categories wrt value is obtained by sorting `inventory_value_by_category` in ascending order.
+
 </li>
 <li>
 
-Inventory aging is obtained by grouping ```df_4``` with ```Age``` and aggregating it with the sum of ```Unit Price```.
+Inventory aging is obtained by grouping `df_4` with `Age` and aggregating it with the sum of `Unit Price`.
+
 </li>
 <li>
 
-Inventory value distributed across different bins is obtained by grouping ```df_4``` with ```Bin Code``` and aggregating it with the sum of ```Unit Price```.
+Inventory value distributed across different bins is obtained by grouping `df_4` with `Bin Code` and aggregating it with the sum of `Unit Price`.
+
 </li>
 </ol>
 
@@ -288,10 +331,11 @@ kafkaParams={{"bootstrap_servers":"<kafka-url>"}}
 topic = "IOTTemperatureStream01"
 consumer = KafkaConsumer(topic, **kafkaParams)
 ```
+
  </li>
  <li>
 
-Create a dataframe ```df``` with the schema.
+Create a dataframe `df` with the schema.
 
 ```bash
         StructField("lane_number", StringType(), True),
@@ -301,108 +345,127 @@ Create a dataframe ```df``` with the schema.
         StructField("component_type", StringType(), True),
         StructField("component_manufacturer", StringType(), True),
 ```
+
 <li>
 
-Create a function called ```filterData``` which is required to show the temperature data of the last 10 mins and clear out the whole data when 30 mins is passed.</li>
+Create a function called `filterData` which is required to show the temperature data of the last 10 mins and clear out the whole data when 30 mins is passed.</li>
+
 <li>
 
-In ```filterData``` set :
+In `filterData` set :
 
 ```bash
 last_10_minutes = datetime.now() - timedelta(minutes=10)
 last_30_minutes= datetime.now() - timedelta(minutes=30)
 ```
+
 and filter the input dataframe within the last 30 minutes and last 10 minutes.
- 
- ```bash
+
+```bash
 filtered_max_temp_data = dataframe.filter(dataframe.timestamp > last_30_minutes)
 filtered_data = dataframe.filter(dataframe.timestamp > last_10_minutes)
 ```
+
 <li>
 
-Filter ```filtered_data``` with temperature > 50.
+Filter `filtered_data` with temperature > 50.
+
 </li>
 <li>
 
-Generate ```component_counts```  as ```filtered_data .groupBy ("component_type").count()```, which is used to show the count of components with temperature > 50.
+Generate `component_counts` as `filtered_data .groupBy ("component_type").count()`, which is used to show the count of components with temperature > 50.
+
  </li>
  <li>
 
-Create two windows named ```window2```, window which helps to change a 
+Create two windows named `window2`, window which helps to change a
 column in the dataframe by preserving the other columns.
 
 ```bash
 window2 = Window.partitionBy("lane_number").rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
 window = Window.partitionBy("lane_number").orderBy(desc("temperature"))
 ```
+
  <li>
 
-Add two columns ```avg_value``` and ```variance``` with mean of ```temperature``` over ```window2``` and variance of ```temperature``` over ```window```.
+Add two columns `avg_value` and `variance` with mean of `temperature` over `window2` and variance of `temperature` over `window`.
+
 </li>
 <li>
 
-Set 
+Set
 
 ```bash
 max_temp_per_lane = filtered_max_temp_data.withColumn("row_number", row_number().over(window))
 max_temp_per_lane = max_temp_per_lane.filter(col("row_number") ==1)
 ```
+
  </li>
  <li>
 
-Plot a graph of ```max_temp_per_lane``` by converting into ```pandas()```.
+Plot a graph of `max_temp_per_lane` by converting into `pandas()`.
+
 <li>
 
-Create a function called ```process(rdd)``` which convert the input dataframe rdd from JSON file into data which is set as ```bronze_data```.
+Create a function called `process(rdd)` which convert the input dataframe rdd from JSON file into data which is set as `bronze_data`.
+
 </li> 
 <li>
 
 It removes the null columns from the data.
+
 ```bash
 data = data.filter(data["component_info"].isNotNull())
 data = data.filter(data["timestamp"].isNotNull())
 ```
+
  </li>
 <li>
 
-If ```data.count``` > 0  then 
+If `data.count` > 0 then
+
 ```bash
 data = data.withColumn("timestamp",when(col("timestamp").cast("double").isNotNull( ), col("timestamp").cast("double").cast("timestamp")).otherwise(col("timestamp")))
-data = data.withColumn("component_manufacturer",                        data["component_info"]["component_manufacturer"]) 
+data = data.withColumn("component_manufacturer",                        data["component_info"]["component_manufacturer"])
 data = data.withColumn( "component_type", data["component_info"]["component_type"])
 data = data.drop("component_info")
- ```
+```
+
  </li>
 <li>
 
-This data is input into ```df``` which is already defined with a specific schema.
+This data is input into `df` which is already defined with a specific schema.
 
-```df=df.union(data)```
+`df=df.union(data)`
 
 </li>
 <li>
 
-The formed data is silver data which is again refined by performing ```filterData(df)```.
+The formed data is silver data which is again refined by performing `filterData(df)`.
+
 </li>
  <li>
 
-Finally in the main program the ```consumer``` is initialized data is loaded as JSON data from the ```record.value```.
+Finally in the main program the `consumer` is initialized data is loaded as JSON data from the `record.value`.
 
-``` bash
+```bash
 messages = consumer.poll(1000)
     for tp, message in messages.items():
         for record in message:
             data = json.loads(record.value)
 ```
+
 </li>
 <li>
 
- Process the data in function ```process()``` only if there is component_info in data .
- ```bash
+Process the data in function `process()` only if there is component_info in data .
+
+```bash
 if "component_info" in data and data["component_info"] and "component_type" in data["component_info"] and data["component_info"] ["component_type"] and data['temperature'] is not None:
-    rdd = sc.parallelize([record.value.decode('utf-8')])
-    process(rdd)
+   rdd = sc.parallelize([record.value.decode('utf-8')])
+   process(rdd)
 ```
+
 </li>
 <li>
 The required data is obtained along with the generated graph.
@@ -447,11 +510,12 @@ Go to [Table of Contents](#table-of-contents)
 
 ### Step 1: Download Spark Jar
 
-Spark Core jar is required for compilation, therefore, download ```spark-core_2.10-1.3.0.jar``` from the following link <a href="http://mvnrepository.com/artifact/org.apache.spark/spark-core_2.10/1.3.0">Spark Core jar</a> and move the jar file from download directory to spark-application directory.
+Spark Core jar is required for compilation, therefore, download `spark-core_2.10-1.3.0.jar` from the following link <a href="http://mvnrepository.com/artifact/org.apache.spark/spark-core_2.10/1.3.0">Spark Core jar</a> and move the jar file from download directory to spark-application directory.
 
 ### Step 2: Compile the code
 
-Compile the above program using the command given below. This command should be executed from the spark-application directory. Here, ```/usr/local/spark/lib/spark-assembly-1.4.0-hadoop2.6.0.jar``` is a Hadoop support jar taken from Spark library.
+Compile the above program using the command given below. This command should be executed from the spark-application directory. Here, `/usr/local/spark/lib/spark-assembly-1.4.0-hadoop2.6.0.jar` is a Hadoop support jar taken from Spark library.
+
 ```bash
 scalac -classpath "spark-core_2.10-1.3.0.jar:/usr/local/spark/lib/spark-assembly-1.4.0-hadoop2.6.0.jar" SparkPi.scala
 ```
@@ -459,6 +523,7 @@ scalac -classpath "spark-core_2.10-1.3.0.jar:/usr/local/spark/lib/spark-assembly
 ### Step 3: Create a jar file
 
 Create a jar file of the spark application using the following command. Here, wordcount is the file name for jar file.
+
 ```bash
 jar -cvf wordcount.jar SparkWordCount*.class spark-core_2.10-1.3.0.jar/usr/local/spark/lib/spark-assembly-1.4.0-hadoop2.6.0.jar
 ```
@@ -466,6 +531,7 @@ jar -cvf wordcount.jar SparkWordCount*.class spark-core_2.10-1.3.0.jar/usr/local
 ### Step 4: Submit the Spark Application
 
 Submit the spark application using the following command :
+
 ```bash
 spark-submit --class SparkWordCount --master local wordcount.jar
 ```
