@@ -87,6 +87,8 @@ Go to [Table of Contents](#table-of-contents)
 
 ### Report 1 (Operations Management Report)
 
+#### [Generate Report 1](https://colab.research.google.com/github/jaison080/cockpit-manufacturing-data-analysis/blob/master/reports/report1.ipynb)
+
 <ol>
 <li>Spark session is created using the AWS Access Key and AWS Secret Key.</li>
 <li>
@@ -234,6 +236,7 @@ Go to [Table of Contents](#table-of-contents)
 
 ### Report 2 (SC Supply Chain Report)
 
+#### [Generate Report 2](https://colab.research.google.com/github/jaison080/cockpit-manufacturing-data-analysis/blob/master/reports/report2.ipynb)
 <ol>
 <li>
 
@@ -318,6 +321,8 @@ Inventory value distributed across different bins is obtained by grouping `df_4`
 Go to [Table of Contents](#table-of-contents)
 
 ### Report 3 (Component Temperature Realtime Report)
+
+#### [Generate Report 3](https://colab.research.google.com/github/jaison080/cockpit-manufacturing-data-analysis/blob/master/reports/report3.ipynb)
 
 <ol>
 <li>Create Spark Session called "Report 3 : Component Temperature Realtime Report".</li>
@@ -471,6 +476,7 @@ if "component_info" in data and data["component_info"] and "component_type" in d
 The required data is obtained along with the generated graph.
 </li>
 </ol>
+
 
 Go to [Table of Contents](#table-of-contents)
 
